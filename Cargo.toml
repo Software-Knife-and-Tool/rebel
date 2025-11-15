@@ -1,0 +1,15 @@
+[package]
+name = "rebel"
+version = "0.0.1"
+edition = "2024"
+
+[dependencies]
+iced = {version = "0.13.1", features = ["tokio", "advanced"]}
+json = "0.12"
+mu = { git = "https://github.com/Software-Knife-and-Tool/mu.git" }
+rfd = {version = "0.15", features = []}
+smol_str = "0.2.2"
+tokio = {version = "1.44.1", features = ["fs", "rt"]}
+
+[target.'cfg(not(target_env = "msvc"))'.dependencies]
+tikv-jemallocator = "0.6"
