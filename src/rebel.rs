@@ -124,7 +124,7 @@ impl Rebel {
 
                 self.view = text_editor::Content::with_text(&Self::pad_lines(
                     self.image.write(
-                        self.image.compile(self.image.eval(self.image.read(text))),
+                        self.image.eval(self.image.compile(self.image.read(text))),
                         false,
                     ),
                     30,
