@@ -6,7 +6,11 @@
 #[rustfmt::skip]
 use {
     crate::{
-       image::inspector::Inspector,
+        image::{
+            core::Core,
+            inspector::Inspector,
+            mu::Mu
+        },
     },
     iced::{
         widget::{
@@ -30,7 +34,9 @@ use {
 };
 
 pub struct Rebel {
-    image: Inspector,
+    mu: Mu,
+    _core: Core,
+    _inspector: Inspector,
     view: text_editor::Content,
     error: Option<Error>,
     is_dirty: bool,
@@ -65,7 +71,7 @@ impl Rebel {
         }
     }
 
-    fn intro(image: &Inspector) -> String {
+    fn intro(image: &Mu) -> String {
         let version: String = format!(";;; mu {}\n", image.version());
         let core: String = ";;; /opt/mu/lib/core.sys loaded\n".into();
 
@@ -75,12 +81,14 @@ impl Rebel {
     }
 
     pub fn new() -> (Self, Task<Message>) {
-        let image = Inspector::new();
-        let intro = Self::intro(&image);
+        let mu = Mu::new();
+        let intro = Self::intro(&mu);
 
         (
             Self {
-                image,
+                _core: Core::new(),
+                _inspector: Inspector::new(),
+                mu,
                 path: None,
                 source: text_editor::Content::with_text(&Self::pad_lines(String::new(), 30)),
                 view: text_editor::Content::with_text(&intro),
@@ -123,10 +131,10 @@ impl Rebel {
                 let text = self.source.text();
 
                 self.view = text_editor::Content::with_text(&Self::pad_lines(
-                    self.image.write(
-                        self.image.eval(self.image.compile(self.image.read(text))),
-                        false,
-                    ),
+                    match self.mu.eval_string(text) {
+                        Ok(tag) => self.mu.write(tag, false),
+                        Err(err) => err,
+                    },
                     30,
                 ));
 
@@ -148,10 +156,7 @@ impl Rebel {
             Message::Save => {
                 let text = self.source.text();
 
-                Task::perform(
-                    Self::save_buffer(self.path.clone(), text),
-                    Message::FileSaved,
-                )
+                Task::perform(Self::save_buffer(None, text), Message::FileSaved)
             }
             Message::FileSaved(Ok(path)) => {
                 self.path = Some(path);
@@ -169,16 +174,16 @@ impl Rebel {
 
     pub fn view(&self) -> Element<'_, Message> {
         let controls = row![
-            Self::action(Self::icon('\u{0029}'), "clear buffer", Some(Message::Clear)),
-            Self::action(Self::icon('\u{0068}'), "load buffer", Some(Message::Load)),
+            Self::action(Self::icon('\u{E01E}'), "clear buffer", Some(Message::Clear)),
+            Self::action(Self::icon('\u{003A}'), "load buffer", Some(Message::Load)),
             Self::action(
-                Self::icon('\u{0067}'),
+                Self::icon('\u{e055}'),
                 "save buffer",
                 self.is_dirty.then_some(Message::Save)
             ),
-            Self::action(Self::icon('\u{005B}'), "eval buffer", Some(Message::Eval)),
+            Self::action(Self::icon('\u{0034}'), "eval buffer", Some(Message::Eval)),
             Self::action(
-                Self::icon('\u{E037}'),
+                Self::icon('\u{E041}'),
                 "browse selection",
                 Some(Message::Browse)
             ),
