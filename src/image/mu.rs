@@ -10,7 +10,7 @@ use tikv_jemallocator::Jemalloc;
 static GLOBAL: Jemalloc = Jemalloc;
 
 use {
-    crate::image::{config::Config, env_::Env_, repl},
+    crate::image::{config::Config, env_::Env_, repl::Repl},
     mu::Tag,
 };
 
@@ -65,11 +65,7 @@ impl Mu {
         mu::Mu::write_to_string(self.env.env, form, escapep)
     }
 
-    pub fn inspect(&self, _form: Tag) -> String {
-        String::new()
-    }
-
     pub fn listener(&self) {
-        repl::listener(&self.env).expect("listener: listener error");
+        Repl::listener(self).expect("listener: listener error");
     }
 }
