@@ -1,16 +1,24 @@
 //  SPDX-FileCopyrightText: Copyright 2024 James M. Putnam (putnamjm.design@gmail.com)
 //  SPDX-License-Identifier: MIT
 #![allow(dead_code)]
+
+#[cfg(not(target_env = "msvc"))]
+use tikv_jemallocator::Jemalloc;
+
+#[cfg(not(target_env = "msvc"))]
+#[global_allocator]
+static GLOBAL: Jemalloc = Jemalloc;
+
 use {
     crate::image::{config::Config, env_::Env_, repl},
-    mu::{Mu, Tag},
+    mu::Tag,
 };
 
-pub struct Inspector {
+pub struct Mu {
     pub env: Env_,
 }
 
-impl Inspector {
+impl Mu {
     pub fn new() -> Self {
         let env = Env_::new(Config::new());
 
@@ -18,13 +26,13 @@ impl Inspector {
     }
 
     pub fn version(&self) -> String {
-        Mu::version().into()
+        mu::Mu::version().into()
     }
 
     pub fn load(&self, path: &str) -> std::result::Result<bool, String> {
-        match Mu::load(self.env.env, path) {
+        match mu::Mu::load(self.env.env, path) {
             Ok(_) => Ok(true),
-            Err(ex) => Err(Mu::exception_string(self.env.env, ex)),
+            Err(ex) => Err(mu::Mu::exception_string(self.env.env, ex)),
         }
     }
 
@@ -33,28 +41,28 @@ impl Inspector {
     }
 
     pub fn read(&self, form: String) -> std::result::Result<Tag, String> {
-        match Mu::read_str(self.env.env, &form) {
+        match mu::Mu::read_str(self.env.env, &form) {
             Ok(tag) => Ok(tag),
-            Err(ex) => Err(Mu::exception_string(self.env.env, ex)),
+            Err(ex) => Err(mu::Mu::exception_string(self.env.env, ex)),
         }
     }
 
     pub fn compile(&self, form: Tag) -> std::result::Result<Tag, String> {
-        match Mu::compile(self.env.env, form) {
+        match mu::Mu::compile(self.env.env, form) {
             Ok(tag) => Ok(tag),
-            Err(ex) => Err(Mu::exception_string(self.env.env, ex)),
+            Err(ex) => Err(mu::Mu::exception_string(self.env.env, ex)),
         }
     }
 
     pub fn eval(&self, form: Tag) -> std::result::Result<Tag, String> {
-        match Mu::eval(self.env.env, form) {
+        match mu::Mu::eval(self.env.env, form) {
             Ok(tag) => Ok(tag),
-            Err(ex) => Err(Mu::exception_string(self.env.env, ex)),
+            Err(ex) => Err(mu::Mu::exception_string(self.env.env, ex)),
         }
     }
 
     pub fn write(&self, form: Tag, escapep: bool) -> String {
-        Mu::write_to_string(self.env.env, form, escapep)
+        mu::Mu::write_to_string(self.env.env, form, escapep)
     }
 
     pub fn inspect(&self, _form: Tag) -> String {

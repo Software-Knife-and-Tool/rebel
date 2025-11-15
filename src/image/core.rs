@@ -1,16 +1,17 @@
 //  SPDX-FileCopyrightText: Copyright 2024 James M. Putnam (putnamjm.design@gmail.com)
 //  SPDX-License-Identifier: MIT
 #![allow(dead_code)]
+
 use {
     crate::image::{config::Config, env_::Env_, repl},
     mu::{Mu, Tag},
 };
 
-pub struct Inspector {
+pub struct Core {
     pub env: Env_,
 }
 
-impl Inspector {
+impl Core {
     pub fn new() -> Self {
         let env = Env_::new(Config::new());
 
