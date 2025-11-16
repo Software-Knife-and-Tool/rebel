@@ -16,17 +16,23 @@ use {
 
 pub struct Mu {
     pub env: Env_,
+    pub config: Config,
 }
 
 impl Mu {
     pub fn new() -> Self {
         let env = Env_::new(Config::new());
+        let config = env.config.clone();
 
-        Self { env }
+        Self { env, config }
     }
 
     pub fn version(&self) -> String {
         mu::Mu::version().into()
+    }
+
+    pub fn map_config(&self, name: &str) -> Option<String> {
+        self.config.map(name)
     }
 
     pub fn load(&self, path: &str) -> std::result::Result<bool, String> {
