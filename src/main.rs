@@ -4,6 +4,7 @@
 //! main
 mod image;
 mod rebel;
+mod status_line;
 
 #[rustfmt::skip]
 use {

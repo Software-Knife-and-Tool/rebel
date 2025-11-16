@@ -10,6 +10,7 @@ use {
             inspector::Inspector,
             mu::Mu
         },
+        status_line::StatusLine,
     },
     iced::{
         widget::{
@@ -39,7 +40,7 @@ pub struct Rebel {
     is_dirty: bool,
     path: Option<PathBuf>,
     source: text_editor::Content,
-    status: String,
+    status_line: StatusLine,
 }
 
 #[derive(Debug, Clone)]
@@ -69,28 +70,19 @@ impl Rebel {
         }
     }
 
-    fn intro(image: &Mu) -> String {
-        let version: String = format!(";;; mu {}\n", image.version());
-        let core: String = ";;; /opt/mu/lib/core.sys loaded\n".into();
-
-        let intro = version + &core;
-
-        Self::pad_lines(intro, 30)
-    }
-
     pub fn new() -> (Self, Task<Message>) {
         let mu = Mu::new();
-        let intro = Self::intro(&mu);
+        let status_line = StatusLine::new(&mu);
 
         (
             Self {
                 mu,
                 path: None,
                 source: text_editor::Content::with_text(&Self::pad_lines(String::new(), 30)),
-                view: text_editor::Content::with_text(&intro),
+                view: text_editor::Content::with_text(&Self::pad_lines(String::new(), 30)),
                 error: None,
                 is_dirty: true,
-                status: "initializing...".to_string(),
+                status_line,
             },
             Task::none(),
         )
@@ -208,10 +200,12 @@ impl Rebel {
                 _ => text_editor::Binding::from_key_press(key_press),
             });
 
+        let status = self.status_line.content();
+
         self::column![
             controls,
             self::row![input, inspector].spacing(10),
-            text(&self.status)
+            text(status)
         ]
         .spacing(10)
         .padding(10)
