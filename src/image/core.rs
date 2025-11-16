@@ -3,66 +3,63 @@
 #![allow(dead_code)]
 
 use {
-    crate::image::{config::Config, env_::Env_, repl},
-    mu::{Mu, Tag},
+    crate::image::{mu::Mu, repl::Repl},
+    mu::{Mu as Mu_, Tag},
 };
 
-pub struct Core {
-    pub env: Env_,
+pub trait Core {
+    fn version(&self) -> String;
+    fn load(&self, _: &str) -> std::result::Result<bool, String>;
+    fn eval_string(&self, _: String) -> std::result::Result<Tag, String>;
+    fn read(&self, _: String) -> std::result::Result<Tag, String>;
+    fn compile(&self, _: Tag) -> std::result::Result<Tag, String>;
+    fn eval(&self, _: Tag) -> std::result::Result<Tag, String>;
+    fn write(&self, _: Tag, _: bool) -> String;
+    fn listener(&self);
 }
 
-impl Core {
-    pub fn new() -> Self {
-        let env = Env_::new(Config::new());
-
-        Self { env }
+impl Core for Mu {
+    fn version(&self) -> String {
+        Mu_::version().into()
     }
 
-    pub fn version(&self) -> String {
-        Mu::version().into()
-    }
-
-    pub fn load(&self, path: &str) -> std::result::Result<bool, String> {
-        match Mu::load(self.env.env, path) {
+    fn load(&self, path: &str) -> std::result::Result<bool, String> {
+        match Mu_::load(self.env.env, path) {
             Ok(_) => Ok(true),
-            Err(ex) => Err(Mu::exception_string(self.env.env, ex)),
+            Err(ex) => Err(Mu_::exception_string(self.env.env, ex)),
         }
     }
 
-    pub fn eval_string(&self, form: String) -> std::result::Result<Tag, String> {
+    fn eval_string(&self, form: String) -> std::result::Result<Tag, String> {
         self.eval(self.compile(self.read(form)?)?)
     }
 
-    pub fn read(&self, form: String) -> std::result::Result<Tag, String> {
-        match Mu::read_str(self.env.env, &form) {
+    fn read(&self, form: String) -> std::result::Result<Tag, String> {
+        match Mu_::read_str(self.env.env, &form) {
             Ok(tag) => Ok(tag),
-            Err(ex) => Err(Mu::exception_string(self.env.env, ex)),
+            Err(ex) => Err(Mu_::exception_string(self.env.env, ex)),
         }
     }
 
-    pub fn compile(&self, form: Tag) -> std::result::Result<Tag, String> {
-        match Mu::compile(self.env.env, form) {
+    fn compile(&self, form: Tag) -> std::result::Result<Tag, String> {
+        match Mu_::compile(self.env.env, form) {
             Ok(tag) => Ok(tag),
-            Err(ex) => Err(Mu::exception_string(self.env.env, ex)),
+            Err(ex) => Err(Mu_::exception_string(self.env.env, ex)),
         }
     }
 
-    pub fn eval(&self, form: Tag) -> std::result::Result<Tag, String> {
-        match Mu::eval(self.env.env, form) {
+    fn eval(&self, form: Tag) -> std::result::Result<Tag, String> {
+        match Mu_::eval(self.env.env, form) {
             Ok(tag) => Ok(tag),
-            Err(ex) => Err(Mu::exception_string(self.env.env, ex)),
+            Err(ex) => Err(Mu_::exception_string(self.env.env, ex)),
         }
     }
 
-    pub fn write(&self, form: Tag, escapep: bool) -> String {
-        Mu::write_to_string(self.env.env, form, escapep)
+    fn write(&self, form: Tag, escapep: bool) -> String {
+        Mu_::write_to_string(self.env.env, form, escapep)
     }
 
-    pub fn inspect(&self, _form: Tag) -> String {
-        String::new()
-    }
-
-    pub fn listener(&self) {
-        repl::listener(&self.env).expect("listener: listener error");
+    fn listener(&self) {
+        Repl::listener(self).expect("listener: listener error");
     }
 }

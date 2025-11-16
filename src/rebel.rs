@@ -7,7 +7,6 @@
 use {
     crate::{
         image::{
-            core::Core,
             inspector::Inspector,
             mu::Mu
         },
@@ -35,13 +34,12 @@ use {
 
 pub struct Rebel {
     mu: Mu,
-    _core: Core,
-    _inspector: Inspector,
     view: text_editor::Content,
     error: Option<Error>,
     is_dirty: bool,
     path: Option<PathBuf>,
     source: text_editor::Content,
+    status: String,
 }
 
 #[derive(Debug, Clone)]
@@ -86,14 +84,13 @@ impl Rebel {
 
         (
             Self {
-                _core: Core::new(),
-                _inspector: Inspector::new(),
                 mu,
                 path: None,
                 source: text_editor::Content::with_text(&Self::pad_lines(String::new(), 30)),
                 view: text_editor::Content::with_text(&intro),
                 error: None,
                 is_dirty: true,
+                status: "initializing...".to_string(),
             },
             Task::none(),
         )
@@ -183,7 +180,7 @@ impl Rebel {
             ),
             Self::action(Self::icon('\u{0034}'), "eval buffer", Some(Message::Eval)),
             Self::action(
-                Self::icon('\u{E041}'),
+                Self::icon('\u{E010}'),
                 "browse selection",
                 Some(Message::Browse)
             ),
@@ -211,10 +208,14 @@ impl Rebel {
                 _ => text_editor::Binding::from_key_press(key_press),
             });
 
-        self::column![controls, self::row![input, inspector].spacing(10)]
-            .spacing(10)
-            .padding(10)
-            .into()
+        self::column![
+            controls,
+            self::row![input, inspector].spacing(10),
+            text(&self.status)
+        ]
+        .spacing(10)
+        .padding(10)
+        .into()
     }
 
     fn action<'a>(
