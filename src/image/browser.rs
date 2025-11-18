@@ -3,16 +3,19 @@
 #![allow(dead_code)]
 #![allow(unused)]
 use {
-    crate::image::{config::Config, env_::Env_, repl::Repl},
+    crate::{
+        config::Config,
+        image::{env_::Env_, repl::Repl},
+    },
     mu::{Mu, Tag},
 };
 
-pub trait Inspector {
-    fn inspect(&self, _: Tag) -> String;
+pub trait Browser {
+    fn browse(&self, _: Tag) -> String;
 }
 
-impl Inspector for Mu {
-    fn inspect(&self, _form: Tag) -> String {
+impl Browser for Mu {
+    fn browse(&self, _form: Tag) -> String {
         String::new()
     }
 }

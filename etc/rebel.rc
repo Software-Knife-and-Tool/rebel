@@ -1,0 +1,3 @@
+;;; any old code here
+(mu:write ";;; rebel 0.0.3" () mu:*standard-output*)
+(mu:write #\linefeed () mu:*standard-output*)

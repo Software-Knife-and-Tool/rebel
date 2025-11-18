@@ -10,21 +10,22 @@ use tikv_jemallocator::Jemalloc;
 static GLOBAL: Jemalloc = Jemalloc;
 
 use {
-    crate::image::{config::Config, env_::Env_, repl::Repl},
+    crate::{
+        config::{Config, ConfigOpt},
+        image::{env_::Env_, repl::Repl},
+    },
     mu::Tag,
 };
 
 pub struct Mu {
     pub env: Env_,
-    pub config: Config,
 }
 
 impl Mu {
-    pub fn new() -> Self {
-        let env = Env_::new(Config::new());
-        let config = env.config.clone();
+    pub fn new(config: &Config) -> Self {
+        let env = Env_::new(config.clone());
 
-        Self { env, config }
+        Self { env }
     }
 
     pub fn version(&self) -> String {
@@ -32,7 +33,11 @@ impl Mu {
     }
 
     pub fn map_config(&self, name: &str) -> Option<String> {
-        self.config.map(name)
+        self.env.config.map(name)
+    }
+
+    pub fn map_config_opt(&self, name: &str) -> Option<ConfigOpt> {
+        self.env.config.map_opt(name)
     }
 
     pub fn load(&self, path: &str) -> std::result::Result<bool, String> {

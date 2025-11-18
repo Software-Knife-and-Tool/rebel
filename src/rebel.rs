@@ -3,28 +3,15 @@
 
 //! rebel
 #[allow(unused_imports)]
-#[rustfmt::skip]
 use {
     crate::{
-        image::{
-            inspector::Inspector,
-            mu::Mu
-        },
+        config::Config,
+        image::{browser::Browser, mu::Mu},
         status_line::StatusLine,
     },
     iced::{
-        widget::{
-            button, column, container,
-            horizontal_space, row, text,
-            text_editor, tooltip,
-        },
-        Center,
-        Element,
-        Font,
-        Length,
-        Task,
-        Theme,
-        keyboard
+        Center, Element, Font, Length, Task, Theme, keyboard,
+        widget::{button, column, container, horizontal_space, row, text, text_editor, tooltip},
     },
     std::{
         io,
@@ -35,11 +22,11 @@ use {
 
 pub struct Rebel {
     mu: Mu,
-    view: text_editor::Content,
+    browser: text_editor::Content,
+    source: text_editor::Content,
     error: Option<Error>,
     is_dirty: bool,
     path: Option<PathBuf>,
-    source: text_editor::Content,
     status_line: StatusLine,
 }
 
@@ -71,7 +58,8 @@ impl Rebel {
     }
 
     pub fn new() -> (Self, Task<Message>) {
-        let mu = Mu::new();
+        let config = Config::new();
+        let mu = Mu::new(&config);
         let status_line = StatusLine::new(&mu);
 
         (
@@ -79,7 +67,7 @@ impl Rebel {
                 mu,
                 path: None,
                 source: text_editor::Content::with_text(&Self::pad_lines(String::new(), 30)),
-                view: text_editor::Content::with_text(&Self::pad_lines(String::new(), 30)),
+                browser: text_editor::Content::with_text(&Self::pad_lines(String::new(), 30)),
                 error: None,
                 is_dirty: true,
                 status_line,
@@ -111,7 +99,7 @@ impl Rebel {
             Message::Clear => {
                 self.path = None;
                 self.source = text_editor::Content::with_text(&Self::pad_lines(String::new(), 30));
-                self.view = text_editor::Content::with_text(&Self::pad_lines(String::new(), 30));
+                self.browser = text_editor::Content::with_text(&Self::pad_lines(String::new(), 30));
                 self.is_dirty = true;
 
                 Task::none()
@@ -119,7 +107,7 @@ impl Rebel {
             Message::Eval => {
                 let text = self.source.text();
 
-                self.view = text_editor::Content::with_text(&Self::pad_lines(
+                self.browser = text_editor::Content::with_text(&Self::pad_lines(
                     match self.mu.eval_string(text) {
                         Ok(tag) => self.mu.write(tag, false),
                         Err(err) => err,
@@ -190,7 +178,7 @@ impl Rebel {
                 _ => text_editor::Binding::from_key_press(key_press),
             });
 
-        let inspector = text_editor(&self.view)
+        let browser = text_editor(&self.browser)
             .placeholder("")
             .on_action(Message::Edit)
             .key_binding(|key_press| match key_press.key.as_ref() {
@@ -204,7 +192,7 @@ impl Rebel {
 
         self::column![
             controls,
-            self::row![input, inspector].spacing(10),
+            self::row![input, browser].spacing(10),
             text(status)
         ]
         .spacing(10)
