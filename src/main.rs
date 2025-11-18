@@ -2,6 +2,7 @@
 //  SPDX-License-Identifier: MIT
 
 //! main
+mod config;
 mod image;
 mod rebel;
 mod status_line;

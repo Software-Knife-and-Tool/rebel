@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: MIT
 #![allow(dead_code)]
 use {
-    crate::image::config::Config,
+    crate::config::{Config, ConfigOpt},
     mu::{Env, Mu},
 };
 
@@ -48,6 +48,21 @@ impl Env_ {
             },
             None => "mu",
         };
+
+        match config.map_opt("modules") {
+            Some(modules) => match modules {
+                ConfigOpt::Array(vec) => {
+                    for module in vec {
+                        match module {
+                            ConfigOpt::String(str) => Self::load_sys(env, &str),
+                            _ => panic!(),
+                        }
+                    }
+                },
+                _ => (),
+            },
+            None => (),
+        }
 
         match config.map("rc") {
             Some(rc) => match Mu::load(env, rc.as_str()) {
